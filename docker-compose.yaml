@@ -2,7 +2,8 @@ services:
   db:
     image: postgres:16
     restart: unless-stopped
-    ports: ["5432:5432"]
+    ports:
+      - "${PG_PORT}:5432"
     environment:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASS}
@@ -14,8 +15,8 @@ services:
     image: dpage/pgadmin4
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: yamanyucel@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: 1234567890
+      PGADMIN_DEFAULT_EMAIL: yy@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 12345
     ports:
       - "5050:80"
     depends_on:

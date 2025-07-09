@@ -1,5 +1,5 @@
 import getpass
-import platform
+import sys
 from pathlib import Path
 
 from pydantic import Field
@@ -38,8 +38,7 @@ class TrackerSettings(BaseSettings):
 
     @property
     def system(self) -> str:
-        """Return the current operating system name (e.g. 'Windows', 'Linux', 'Darwin')."""
-        return platform.system()
+        return sys.platform
 
 
 tracker_settings = TrackerSettings()

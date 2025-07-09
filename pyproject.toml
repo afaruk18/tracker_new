@@ -16,4 +16,5 @@ dependencies = [
     "sqlmodel>=0.0.24",
     "psycopg[binary]>=3.2.9",
     "pyinstaller>=6.14.2",
+    "loguru>=0.7.3",
 ]

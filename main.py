@@ -1,4 +1,4 @@
-from tracker.core.screen_tracker import ActivityTracker
+from tracker.core.app import ActivityTracker
 
 
 def main() -> None:
