@@ -1,0 +1,19 @@
+[project]
+name = "tracker-new"
+version = "0.1.0"
+description = "User screen tracker"
+readme = "README.md"
+authors = [
+    { name = "Yaman Yucel", email = "yamanyucel0@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "mss>=10.0.0",
+    "pillow>=11.3.0",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.1",
+    "sqlalchemy>=2.0.41",
+    "sqlmodel>=0.0.24",
+    "psycopg[binary]>=3.2.9",
+    "pyinstaller>=6.14.2",
+]
