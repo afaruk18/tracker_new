@@ -19,7 +19,6 @@ class DBSettings(BaseSettings):
     @property
     def database_url(self) -> str:
         """Return a SQLAlchemy-compatible Postgres connection URL."""
-        print(f"postgresql+psycopg://{self.PG_USER}:{self.PG_PASS}@{self.PG_HOST}:{self.PG_PORT}/{self.PG_DATABASE}")
         return f"postgresql+psycopg://{self.PG_USER}:{self.PG_PASS}@{self.PG_HOST}:{self.PG_PORT}/{self.PG_DATABASE}"
 
 
