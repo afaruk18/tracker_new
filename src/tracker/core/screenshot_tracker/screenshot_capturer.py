@@ -21,7 +21,7 @@ class ScreenshotCapturer:
     def __init__(self, screenshot_dir: Path) -> None:
         self._dir = screenshot_dir
 
-    def capture_all(self) -> None:
+    def capture_all_monitors(self) -> None:
         """Capture all monitors for the current platform.
 
         The method tries the cross-platform *mss* implementation first.  If that
@@ -32,7 +32,7 @@ class ScreenshotCapturer:
         try:
             self._capture_with_mss()
             return
-        except Exception:  # pragma: no cover – defensive only
+        except Exception:
             # *mss* failed – try a platform-specific strategy before giving up
             system = tracker_settings.system
             if system == "win32":
@@ -42,7 +42,7 @@ class ScreenshotCapturer:
             elif system == "linux":
                 self._capture_linux()
             else:
-                raise  # re-raise original *mss* exception for unknown systems
+                raise  # Unreachable since checked at app.py
 
     def _save_image(self, img: Image.Image, monitor_idx: int) -> None:
         """Helper to save *img* into *screenshot_dir* with timestamp naming."""
@@ -63,9 +63,9 @@ class ScreenshotCapturer:
                 self._save_image(img, i)
 
     def _capture_win32(self) -> None:
-        """Fallback for Windows using Pillow’s *ImageGrab* API."""
+        """Fallback for Windows using Pillow’s *ImageGrab* API. Takes whole screen."""
         try:
-            from PIL import ImageGrab  # pylint: disable=import-error
+            from PIL import ImageGrab
 
             img = ImageGrab.grab(all_screens=True)
             self._save_image(img, 1)
@@ -73,7 +73,7 @@ class ScreenshotCapturer:
             raise RuntimeError("Unable to capture screen on Windows") from exc
 
     def _capture_darwin(self) -> None:
-        """Fallback for macOS using the *screencapture* CLI utility."""
+        """Fallback for macOS using the *screencapture* CLI utility. Takes whole screen."""
         import subprocess
         from tempfile import NamedTemporaryFile
 
@@ -89,7 +89,7 @@ class ScreenshotCapturer:
         self._save_image(img, 1)
 
     def _capture_linux(self) -> None:
-        """Fallback for Linux using the *scrot* utility (if installed)."""
+        """Fallback for Linux using the *scrot* utility (if installed). Takes whole screen."""
         import subprocess
         from tempfile import NamedTemporaryFile
 

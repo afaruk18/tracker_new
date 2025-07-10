@@ -11,9 +11,10 @@ class TrackerSettings(BaseSettings):
 
     IDLE_THRESHOLD: int = Field(50, description="seconds before user considered idle")
     HEARTBEAT_EVERY: int = Field(60, description="seconds between heartbeat writes")
-    SCREENSHOT_INTERVAL: int = Field(1800, description="seconds between automatic screenshots (0 = disabled)")
+    SCREENSHOT_INTERVAL: int = Field(86400, description="seconds between automatic screenshots (0 = disabled)")
     IMAGE_FORMAT: str = Field("png", description="png | jpeg")
     IMAGE_QUALITY: int = Field(85, description="JPEG quality when IMAGE_FORMAT == 'jpeg'")
+    WINDOW_EVENT_INTERVAL: int = Field(5, description="seconds a window must remain active before it is logged")
 
     BASE_DIR: Path = Path.cwd() / "tracker"
 
