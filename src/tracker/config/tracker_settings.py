@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings
 class TrackerSettings(BaseSettings):
     """Settings controlling the behaviour of the activity tracker client."""
 
-    IDLE_THRESHOLD: int = Field(50, description="seconds before user considered idle")
+    IDLE_THRESHOLD: int = Field(150, description="seconds before user considered idle")
     HEARTBEAT_EVERY: int = Field(60, description="seconds between heartbeat writes")
     SCREENSHOT_INTERVAL: int = Field(86400, description="seconds between automatic screenshots (0 = disabled)")
     IMAGE_FORMAT: str = Field("png", description="png | jpeg")

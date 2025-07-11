@@ -10,20 +10,7 @@ services:
       POSTGRES_DB: ${PG_DATABASE}
     volumes:
       - pg_tracker_data:/var/lib/postgresql/data
-
-  pgadmin:
-    image: dpage/pgadmin4
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: yy@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: 12345
-    ports:
-      - "5050:80"
-    depends_on:
-      - db
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-
+      
 volumes:
   pg_tracker_data:
   pgadmin_data:

@@ -8,6 +8,8 @@ from tracker.tables.activity_table import ActivityEvent
 from tracker.tables.heartbeat_table import HeartbeatEvent
 from tracker.tables.window_event_table import WindowEvent
 from tracker.tables.working_sessions_table import WorkingSession
+from tracker.tables.adk_query_table import AdkQuery
+from tracker.tables.people_table import Person_Usernames
 
 _engine = create_engine(db_settings.database_url, echo=False)
 SQLModel.metadata.create_all(_engine)

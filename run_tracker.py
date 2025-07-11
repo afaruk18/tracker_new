@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 Simple runner script for the Activity Tracker.
 
