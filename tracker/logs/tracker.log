@@ -1,0 +1,40 @@
+2025-07-14 18:46:58 | INFO     | tracker.config.logger_config:setup_logging:40 - File logging enabled: /home/yaman/tracker/tracker_new/tracker/logs/tracker.log
+2025-07-14 18:46:58 | INFO     | tracker.config.logger_config:setup_logging:41 - Log level: INFO
+2025-07-14 18:46:58 | INFO     | tracker.config.logger_config:setup_logging:42 - Log rotation: 10 MB
+2025-07-14 18:46:58 | INFO     | tracker.config.logger_config:setup_logging:43 - Log retention: 7 days
+2025-07-14 18:46:58 | INFO     | tracker.core.app:run:56 - Starting tracker
+2025-07-14 18:46:58 | INFO     | tracker.core.heartbeat.heartbeat_task:tick:19 - Heartbeat
+2025-07-14 18:46:58 | INFO     | tracker.core.activity_state_tracker.activity_state_task:_log_activity:25 - Logging activity: System Started
+2025-07-14 18:46:58 | INFO     | tracker.core.activity_state_tracker.activity_state_task:_log_activity:25 - Logging activity: Screen Unlocked
+2025-07-14 18:46:58 | INFO     | tracker.core.activity_state_tracker.activity_state_task:_log_activity:25 - Logging activity: User Active
+2025-07-14 18:47:00 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:63 - Window 'uv run run_tracker.py' met duration threshold | Start: 2025-07-14T18:46:58.210723 | End: 2025-07-14T18:47:00.314554 | Duration: 2.1s (>= 0s threshold)
+2025-07-14 18:47:00 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:72 - Completed window event ID 29 for 'uv run run_tracker.py'
+2025-07-14 18:47:04 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:63 - Window 'gnome-shell' met duration threshold | Start: 2025-07-14T18:47:00.314554 | End: 2025-07-14T18:47:04.374815 | Duration: 4.1s (>= 0s threshold)
+2025-07-14 18:47:04 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:72 - Completed window event ID 30 for 'gnome-shell'
+2025-07-14 18:47:04 | INFO     | tracker.core.signal_handler.signal_handler:_handle_exit:49 - Received SIGHUP – starting graceful shutdown…
+2025-07-14 18:47:04 | INFO     | tracker.core.signal_handler.signal_handler:_handle_exit:49 - Received SIGHUP – starting graceful shutdown…
+2025-07-14 18:47:04 | INFO     | tracker.core.signal_handler.signal_handler:_handle_exit:49 - Received SIGHUP – starting graceful shutdown…
+2025-07-14 18:47:04 | INFO     | tracker.core.app:_cleanup_tasks:48 - Completing any active window events...
+2025-07-14 18:47:04 | INFO     | tracker.core.window_tracker.window_task:shutdown:107 - Shutdown: Completed window event for 'uv run run_tracker.py' | Duration: 0.3s (event ID: 31)
+2025-07-14 18:47:04 | INFO     | tracker.core.app:run:78 - Stopping tracker gracefully due to signal
+2025-07-14 18:48:50 | INFO     | tracker.config.logger_config:setup_logging:40 - File logging enabled: /home/yaman/tracker/tracker_new/tracker/logs/tracker.log
+2025-07-14 18:48:50 | INFO     | tracker.config.logger_config:setup_logging:41 - Log level: INFO
+2025-07-14 18:48:50 | INFO     | tracker.config.logger_config:setup_logging:42 - Log rotation: 10 MB
+2025-07-14 18:48:50 | INFO     | tracker.config.logger_config:setup_logging:43 - Log retention: 7 days
+2025-07-14 18:48:50 | INFO     | tracker.core.app:run:56 - Starting tracker
+2025-07-14 18:48:51 | INFO     | tracker.core.heartbeat.heartbeat_task:tick:19 - Heartbeat
+2025-07-14 18:48:51 | INFO     | tracker.core.activity_state_tracker.activity_state_task:_log_activity:25 - Logging activity: System Started
+2025-07-14 18:48:51 | INFO     | tracker.core.activity_state_tracker.activity_state_task:_log_activity:25 - Logging activity: Screen Unlocked
+2025-07-14 18:48:51 | INFO     | tracker.core.activity_state_tracker.activity_state_task:_log_activity:25 - Logging activity: User Active
+2025-07-14 18:49:01 | INFO     | tracker.core.heartbeat.heartbeat_task:tick:19 - Heartbeat
+2025-07-14 18:49:02 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:63 - Window 'run_tracker.py - tracker_new - Cursor' met duration threshold | Start: 2025-07-14T18:48:51.009979 | End: 2025-07-14T18:49:02.318091 | Duration: 11.3s (>= 0s threshold)
+2025-07-14 18:49:02 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:72 - Completed window event ID 32 for 'run_tracker.py - tracker_new - Cursor'
+2025-07-14 18:49:03 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:63 - Window 'yaman@yaman-ws01:~' met duration threshold | Start: 2025-07-14T18:49:02.318091 | End: 2025-07-14T18:49:03.778088 | Duration: 1.5s (>= 0s threshold)
+2025-07-14 18:49:03 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:72 - Completed window event ID 33 for 'yaman@yaman-ws01:~'
+2025-07-14 18:49:06 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:63 - Window 'gnome-shell' met duration threshold | Start: 2025-07-14T18:49:03.778088 | End: 2025-07-14T18:49:06.938225 | Duration: 3.2s (>= 0s threshold)
+2025-07-14 18:49:07 | INFO     | tracker.core.window_tracker.window_task:_complete_previous_window_if_needed:72 - Completed window event ID 34 for 'gnome-shell'
+2025-07-14 18:49:07 | INFO     | tracker.core.activity_state_tracker.activity_state_task:_log_activity:25 - Logging activity: Screen Locked
+2025-07-14 18:49:07 | INFO     | tracker.core.signal_handler.signal_handler:_handle_exit:49 - Received SIGHUP – starting graceful shutdown…
+2025-07-14 18:49:07 | INFO     | tracker.core.app:_cleanup_tasks:48 - Completing any active window events...
+2025-07-14 18:49:07 | INFO     | tracker.core.window_tracker.window_task:shutdown:107 - Shutdown: Completed window event for 'yaman@yaman-ws01:~' | Duration: 0.2s (event ID: 35)
+2025-07-14 18:49:07 | INFO     | tracker.core.app:run:78 - Stopping tracker gracefully due to signal

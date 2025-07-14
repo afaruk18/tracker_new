@@ -14,7 +14,13 @@ class TrackerSettings(BaseSettings):
     SCREENSHOT_INTERVAL: int = Field(86400, description="seconds between automatic screenshots (0 = disabled)")
     IMAGE_FORMAT: str = Field("png", description="png | jpeg")
     IMAGE_QUALITY: int = Field(85, description="JPEG quality when IMAGE_FORMAT == 'jpeg'")
-    WINDOW_EVENT_INTERVAL: int = Field(5, description="seconds a window must remain active before it is logged")
+    WINDOW_EVENT_INTERVAL: int = Field(0, description="seconds a window must remain active before it is logged")
+
+    # File logging settings
+    LOG_TO_FILE: bool = Field(True, description="Enable file logging")
+    LOG_LEVEL: str = Field("INFO", description="Minimum log level (DEBUG, INFO, WARNING, ERROR)")
+    LOG_RETENTION: str = Field("7 days", description="How long to keep log files")
+    LOG_ROTATION: str = Field("10 MB", description="Log file rotation size")
 
     BASE_DIR: Path = Path.cwd() / "tracker"
 
@@ -28,6 +34,18 @@ class TrackerSettings(BaseSettings):
         path = self.BASE_DIR / "screenshots"
         path.mkdir(parents=True, exist_ok=True)
         return path
+
+    @property
+    def log_dir(self) -> Path:
+        """Directory for log files."""
+        path = self.BASE_DIR / "logs"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def log_file_path(self) -> Path:
+        """Full path to the main log file."""
+        return self.log_dir / "tracker.log"
 
     @property
     def user(self) -> str:

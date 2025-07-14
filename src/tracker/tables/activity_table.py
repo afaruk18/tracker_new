@@ -12,7 +12,9 @@ class ActivityEventType(StrEnum):
     ACTIVE = "User Active"
     INACTIVE = "User Inactive"
     UNSUPPORTED = "Unsupported Platform"
-    SHUTDOWN = "System Shutdown"
+    USER_INTERRUPT = "User Interrupt"
+    NORMAL_SHUTDOWN = "Normal Shutdown"
+    SYSTEM_SHUTDOWN = "Shutdown Signal Received"
 
 
 class ActivityEvent(SQLModel, table=True):

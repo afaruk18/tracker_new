@@ -56,7 +56,7 @@ class EventStore:
         INACTIVE = ActivityEventType.INACTIVE.value
         STARTED = ActivityEventType.STARTED.value
         SCREEN_LOCKED = ActivityEventType.SCREEN_LOCKED.value
-        SHUTDOWN = ActivityEventType.SHUTDOWN.value
+        NORMAL_SHUTDOWN = ActivityEventType.NORMAL_SHUTDOWN.value
 
         with get_session() as session:
             # The most recent open session (if any)
@@ -77,7 +77,7 @@ class EventStore:
                             start_time=ts,
                         )
                     )
-            elif label in {INACTIVE, SCREEN_LOCKED, SHUTDOWN}:
+            elif label in {INACTIVE, SCREEN_LOCKED, NORMAL_SHUTDOWN}:
                 if open_session is not None:
                     open_session.end_time = ts
                     open_session.end_reason = label
