@@ -1,16 +1,47 @@
+version: "3.9"
+
 services:
   db:
+    container_name: postgres-db
     image: postgres:16
     restart: unless-stopped
     ports:
-      - "${PG_PORT}:5432"
+      - "${PG_PORT:-5432}:5432" # fallback to 5432 if PG_PORT is unset
     environment:
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASS}
       POSTGRES_DB: ${PG_DATABASE}
     volumes:
       - pg_tracker_data:/var/lib/postgresql/data
-      
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy # wait for Postgres to be healthy
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-yy@gmail.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-123456}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - internal
+
 volumes:
   pg_tracker_data:
   pgadmin_data:
+
+networks:
+  internal:
+    driver: bridge

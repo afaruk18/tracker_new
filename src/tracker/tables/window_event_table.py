@@ -12,6 +12,6 @@ class WindowEvent(SQLModel, table=True):
     username: str = Field(index=True)
     timestamp: datetime = Field(index=True)  # For backward compatibility (same as start_time)
     window_title: str = Field(index=True)
-    duration: float = Field(description="Duration in seconds that the window was focused")
+    duration: float | None = Field(default=None, description="Duration in seconds that the window was focused")
     start_time: datetime | None = Field(default=None, index=True, description="Explicit start timestamp of window focus")
     end_time: datetime | None = Field(default=None, index=True, description="Explicit end timestamp of window focus")

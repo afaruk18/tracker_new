@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from tracker.config.tracker_settings import tracker_settings
+
 from .screenshot_capturer import ScreenshotCapturer
 
 
@@ -38,7 +40,7 @@ class ScreenshotTask:
     """
 
     interval: int
-    capturer: ScreenshotCapturer
+    _capturer: ScreenshotCapturer = ScreenshotCapturer(tracker_settings.screenshot_dir)
     _last: float | None = None
 
     def tick(self, now: float) -> None:
@@ -55,4 +57,4 @@ class ScreenshotTask:
         """
         if self._last is None or now - self._last >= self.interval:
             self._last = now
-            self.capturer.capture_all_monitors()
+            self._capturer.capture_all_monitors()
