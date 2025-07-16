@@ -7,7 +7,7 @@ from sqlmodel import SQLModel, select
 from tracker.config.tracker_settings import tracker_settings
 from tracker.db.connect import get_session
 from tracker.tables.activity_table import ActivityEvent, ActivityEventType
-from tracker.tables.heartbeat_table import HeartbeatEvent
+from tracker.tables.heartbeat_table import HeartbeatEvent, HeartbeatType
 from tracker.tables.window_event_table import WindowEvent
 from tracker.tables.working_sessions_table import WorkingSession
 
@@ -35,31 +35,9 @@ class EventStore:
             session.commit()
 
     @staticmethod
-    def _handle_working_session(label: str, ts: datetime) -> None:
-        """Create or update *WorkingSession* rows based on activity events.
-
-        Rules:
-        - On **Active**: start a new session unless one is already open.
-        - On **Inactive**: close the most recent open session.
-        - On **Screen Locked**: close the most recent open session.
-        - On **Shutdown**: close the most recent open session.
-        - On **Started**: close any lingering open session from the previous run
-          using the timestamp of the last heartbeat between the *Active* and
-          the *Started* events (or *ts* itself if no heartbeat exists).
-        """
-        # Work with *str* values to avoid mixing *str* and *StrEnum* during
-        # downstream comparisons.  Using the ``.value`` attribute keeps the
-        # behaviour identical to the original implementation that relied on
-        # raw strings only.
-
-        ACTIVE = ActivityEventType.ACTIVE.value
-        INACTIVE = ActivityEventType.INACTIVE.value
-        STARTED = ActivityEventType.STARTED.value
-        SCREEN_LOCKED = ActivityEventType.SCREEN_LOCKED.value
-        NORMAL_SHUTDOWN = ActivityEventType.NORMAL_SHUTDOWN.value
-
+    def _handle_working_session(label: ActivityEventType) -> None:
+        ts = datetime.now()
         with get_session() as session:
-            # The most recent open session (if any)
             open_session = session.exec(
                 select(WorkingSession)
                 .where(
@@ -69,7 +47,7 @@ class EventStore:
                 .order_by(WorkingSession.start_time.desc())
             ).first()
 
-            if label == ACTIVE:
+            if label == ActivityEventType.ACTIVE:
                 if open_session is None:
                     session.add(
                         WorkingSession(
@@ -77,14 +55,19 @@ class EventStore:
                             start_time=ts,
                         )
                     )
-            elif label in {INACTIVE, SCREEN_LOCKED, NORMAL_SHUTDOWN}:
+            elif label in {
+                ActivityEventType.INACTIVE,
+                ActivityEventType.SCREEN_LOCKED,
+                ActivityEventType.NORMAL_SHUTDOWN,
+                ActivityEventType.SYSTEM_SHUTDOWN,
+                ActivityEventType.USER_INTERRUPT,
+            }:
                 if open_session is not None:
                     open_session.end_time = ts
                     open_session.end_reason = label
                     session.add(open_session)
-            elif label == STARTED:
+            elif label == ActivityEventType.STARTED:
                 if open_session is not None:
-                    # Find the last heartbeat between *open_session.start_time* and *ts*
                     last_hb = session.exec(
                         select(HeartbeatEvent)
                         .where(
@@ -98,11 +81,10 @@ class EventStore:
                     open_session.end_time = end_ts
                     open_session.end_reason = label
                     session.add(open_session)
-            # Commit any pending changes (if we made modifications)
             session.commit()
 
     @staticmethod
-    def log_activity(label: str, timestamp: datetime | None = None) -> None:
+    def log_event(label: ActivityEventType) -> None:
         """Write an ActivityEvent and print a human-readable log line.
 
         The optional *timestamp* argument allows callers to record a specific
@@ -110,21 +92,20 @@ class EventStore:
         is *None*, the current time (``datetime.now()``) is used for backward
         compatibility.
         """
-        ts = timestamp or datetime.now()
+        ts = datetime.now()
 
         EventStore._insert(
             ActivityEvent(
                 username=tracker_settings.user,
                 timestamp=ts,
-                event=label,
+                event=label.value,
             )
         )
 
-        # Update working-session state once the activity row is recorded
-        EventStore._handle_working_session(label, ts)
+        EventStore._handle_working_session(label)
 
     @staticmethod
-    def heartbeat(timestamp: datetime | None = None) -> None:
+    def heartbeat(timestamp: datetime | None = None, type: HeartbeatType = HeartbeatType.REGULAR) -> None:
         """Write a HeartbeatEvent row.
 
         The optional *timestamp* argument allows callers to record a specific
@@ -137,6 +118,7 @@ class EventStore:
             HeartbeatEvent(
                 username=tracker_settings.user,
                 timestamp=ts,
+                type=type,
             )
         )
 
@@ -199,9 +181,8 @@ class EventStore:
         with get_session() as session:
             window_event = WindowEvent(
                 username=tracker_settings.user,
-                timestamp=start_time,  # For backward compatibility
                 window_title=window_title,
-                duration=None,  # Will be calculated when completed
+                duration=None,
                 start_time=start_time,
                 end_time=None,  # Incomplete - to be filled later
             )
@@ -223,7 +204,7 @@ class EventStore:
             if window_event and window_event.end_time is None:
                 window_event.end_time = end_time
                 if window_event.start_time:
-                    window_event.duration = (end_time - window_event.start_time).total_seconds()
+                    window_event.duration = (window_event.end_time - window_event.start_time).total_seconds()
                 session.add(window_event)
                 session.commit()
 
@@ -240,7 +221,7 @@ class EventStore:
                 select(WindowEvent)
                 .where(
                     WindowEvent.username == tracker_settings.user,
-                    WindowEvent.end_time.is_(None),
+                    WindowEvent.end_time.is_(None),  # Should return None if everything works fine.
                 )
                 .order_by(WindowEvent.start_time.asc())
             ).all()

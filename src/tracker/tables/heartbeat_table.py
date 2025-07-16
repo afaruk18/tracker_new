@@ -1,6 +1,14 @@
 from datetime import datetime
+from enum import StrEnum
 
 from sqlmodel import Field, SQLModel
+
+
+class HeartbeatType(StrEnum):
+    """Enum for heartbeat event types."""
+
+    REGULAR = "REGULAR"
+    FINAL = "FINAL"
 
 
 class HeartbeatEvent(SQLModel, table=True):
@@ -9,4 +17,4 @@ class HeartbeatEvent(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     username: str = Field(index=True, description="System user that emitted the heartbeat")
     timestamp: datetime = Field(index=True, description="Timestamp of the heartbeat event")
-    status: str = Field(default="Alive", description="Heartbeat status text")
+    type: HeartbeatType = Field(default=HeartbeatType.REGULAR, description="Type of heartbeat event")

@@ -1,4 +1,3 @@
-
 """
 Simple runner script for the Activity Tracker.
 
@@ -15,15 +14,15 @@ if src_path.exists():
     sys.path.insert(0, str(src_path))
 
 try:
-    from tracker.core.app import ActivityTracker
+    from tracker.core.app import DevPulseApp
 
     def main():
         """Main entry point for the tracker."""
         print("Starting Activity Tracker...")
         print("Press Ctrl+C to stop")
 
-        tracker = ActivityTracker()
-        tracker.run()
+        devpulse = DevPulseApp()
+        devpulse.run()
 
     if __name__ == "__main__":
         main()

@@ -17,13 +17,13 @@ def setup_logging() -> None:
     # Remove default loguru handler
     logger.remove()
 
-    # Add console handler with colors and nice formatting
-    logger.add(
-        sink=lambda msg: print(msg, end=""),
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-        level=tracker_settings.LOG_LEVEL,
-        colorize=True,
-    )
+    if tracker_settings.LOG_TO_CONSOLE:
+        logger.add(
+            sink=lambda msg: print(msg, end=""),
+            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+            level=tracker_settings.LOG_LEVEL,
+            colorize=True,
+        )
 
     # Add file handler if enabled
     if tracker_settings.LOG_TO_FILE:

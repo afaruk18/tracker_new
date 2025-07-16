@@ -4,9 +4,8 @@ import os
 import signal
 import sys
 from contextlib import suppress
-from datetime import datetime
 from types import FrameType
-from typing import Callable, List, Optional
+from typing import Callable
 
 from loguru import logger
 
@@ -28,10 +27,10 @@ class SignalHandler:
     if os.name == "nt" and hasattr(signal, "SIGBREAK"):
         _BASE_SIGNALS.append(signal.SIGBREAK)  # type: ignore[arg-type]
 
-    def __init__(self, event_store: Optional[EventStore] = None) -> None:
-        self._event_store: EventStore = event_store or EventStore()
-        self._cleanup_fns: List[CleanupFn] = []
+    def __init__(self) -> None:
+        self._cleanup_fns: list[CleanupFn] = []
         self.signal_received = False
+        self.received_signal = None
         self._install_handlers()
 
     def register_cleanup(self, fn: CleanupFn) -> None:
@@ -44,15 +43,17 @@ class SignalHandler:
             except (ValueError, OSError):  # not allowed in threads / rare OSes
                 logger.warning("Could not hook signal %s", sig)
 
-    def _handle_exit(self, signum: int, frame: Optional[FrameType]) -> None:  # noqa: ANN001
+    def _handle_exit(self, signum: int, frame: FrameType | None) -> None:  # noqa: ANN001
+        if self.signal_received:
+            sys.exit(0)
         signal_name = signal.Signals(signum).name
         logger.info(f"Received {signal_name} – starting graceful shutdown…")
         self.signal_received = True
+        self.received_signal = signal_name
         # Audit log with best-effort error suppression
         with suppress(Exception):
-            self._event_store.log_activity(
-                ActivityEventType.SYSTEM_SHUTDOWN.value + f" ({signal_name})" if signal_name != "SIGINT" else ActivityEventType.USER_INTERRUPT.value,
-                timestamp=datetime.now(),
+            EventStore.log_event(
+                ActivityEventType.SYSTEM_SHUTDOWN if signal_name != "SIGINT" else ActivityEventType.USER_INTERRUPT,
             )
 
         for fn in self._cleanup_fns:

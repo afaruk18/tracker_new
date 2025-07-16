@@ -1,5 +1,6 @@
 import getpass
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from pydantic import Field
@@ -15,8 +16,11 @@ class TrackerSettings(BaseSettings):
     IMAGE_FORMAT: str = Field("png", description="png | jpeg")
     IMAGE_QUALITY: int = Field(85, description="JPEG quality when IMAGE_FORMAT == 'jpeg'")
     WINDOW_EVENT_INTERVAL: int = Field(0, description="seconds a window must remain active before it is logged")
+    SYSTEM_RUN_DELAY: float = Field(0.1, description="seconds to wait after running tasks again")
 
     # File logging settings
+
+    LOG_TO_CONSOLE: bool = Field(True, description="Enable console logging")
     LOG_TO_FILE: bool = Field(True, description="Enable file logging")
     LOG_LEVEL: str = Field("INFO", description="Minimum log level (DEBUG, INFO, WARNING, ERROR)")
     LOG_RETENTION: str = Field("7 days", description="How long to keep log files")
@@ -36,6 +40,14 @@ class TrackerSettings(BaseSettings):
         return path
 
     @property
+    def system(self) -> str:
+        return sys.platform
+
+    @property
+    def user(self) -> str:
+        return getpass.getuser()
+
+    @property
     def log_dir(self) -> Path:
         """Directory for log files."""
         path = self.BASE_DIR / "logs"
@@ -44,16 +56,8 @@ class TrackerSettings(BaseSettings):
 
     @property
     def log_file_path(self) -> Path:
-        """Full path to the main log file."""
-        return self.log_dir / "tracker.log"
-
-    @property
-    def user(self) -> str:
-        return getpass.getuser()
-
-    @property
-    def system(self) -> str:
-        return sys.platform
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        return self.log_dir / f"devpulse_{timestamp}.log"
 
 
 tracker_settings = TrackerSettings()

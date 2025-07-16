@@ -10,25 +10,10 @@ from tracker.config.tracker_settings import tracker_settings
 
 
 class ScreenshotCapturer:
-    """Grab screenshots of every monitor and store them in *screenshot_dir*.
-
-    A primary implementation using the *mss* library works on Windows, macOS (darwin)
-    and Linux.  If *mss* fails (e.g. missing X server on a head-less Linux box or the
-    user hasn’t granted macOS screen-recording permission yet) platform-specific
-    fall-backs are attempted so that we at least save a screenshot when possible.
-    """
-
     def __init__(self, screenshot_dir: Path) -> None:
         self._dir = screenshot_dir
 
     def capture_all_monitors(self) -> None:
-        """Capture all monitors for the current platform.
-
-        The method tries the cross-platform *mss* implementation first.  If that
-        raises an exception we fall back to a platform-specific routine so that
-        we still return a screenshot whenever possible.
-        """
-
         try:
             self._capture_with_mss()
             return
