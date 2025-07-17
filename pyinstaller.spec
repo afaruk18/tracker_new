@@ -57,7 +57,7 @@ exe = EXE(
     debug=False,
     strip=False,
     upx=True,
-    console=False,             # set True if you need a console
+    console=True,             # set True if you need a console
 )
 
 # -----------------------------------------------------------------------------
