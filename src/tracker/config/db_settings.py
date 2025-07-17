@@ -4,12 +4,11 @@ from pydantic_settings import BaseSettings
 
 class DBSettings(BaseSettings):
     """Application database connection settings."""
-
-    PG_USER: str = Field(..., env="PG_USER", description="Postgres username")
-    PG_PASS: str = Field(..., env="PG_PASS", description="Postgres password")
-    PG_DATABASE: str = Field(..., env="PG_DATABASE", description="Postgres database name")
-    PG_HOST: str = Field(..., env="PG_HOST", description="Postgres host")
-    PG_PORT: str = Field(..., env="PG_PORT", description="Postgres port")
+    PG_USER:     str = Field("afaruk",        env="PG_USER")
+    PG_PASS:     str = Field("158158158",     env="PG_PASS")
+    PG_DATABASE: str = Field("last_tracker_db", env="PG_DATABASE")
+    PG_HOST:     str = Field("localhost",     env="PG_HOST")
+    PG_PORT:     int = Field(5452,            env="PG_PORT")
 
     class Config:
         env_file = ".env"
