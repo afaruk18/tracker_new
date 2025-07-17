@@ -4,26 +4,16 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_submodules
 
 # -----------------------------------------------------------------------------
-# 1) Make sure Pydantic settings don’t fail on missing DB env vars
+# 1) Stub out missing PG_* env vars so Pydantic models import cleanly
 # -----------------------------------------------------------------------------
 for k in ("PG_USER","PG_PASS","PG_DATABASE","PG_HOST","PG_PORT"):
     os.environ.setdefault(k, "")
 
 # -----------------------------------------------------------------------------
-# 2) Compute project_root & assets path
+# 2) Compute project_root & src_path (use cwd so __file__ isn’t needed)
 # -----------------------------------------------------------------------------
-# PyInstaller doesn’t define __file__, so use cwd
 project_root = Path(os.getcwd()).resolve()
-
-# Try both project_root/assets and one level up
-assets_src = project_root / "assets"
-if not assets_src.exists():
-    assets_src = project_root.parent / "assets"
-
-assert assets_src.exists(), f"Assets directory not found at {assets_src}"
-
-# If your code is in src/, insert it
-src_path = project_root / "src"
+src_path     = project_root / "src"
 if src_path.exists():
     sys.path.insert(0, str(src_path))
 
@@ -31,17 +21,15 @@ if src_path.exists():
 hidden_tracker = collect_submodules("tracker")
 
 # -----------------------------------------------------------------------------
-# Analysis
+# 3) Analysis – no datas/assets
 # -----------------------------------------------------------------------------
 a = Analysis(
-    ['run_tracker.py'],                # or 'main.py' if that’s your entry
-    pathex=[str(project_root), str(src_path)] if src_path.exists() else [str(project_root)],
+    ["run_tracker.py"],                                # your entry‑point
+    pathex=[str(project_root), str(src_path)] 
+           if src_path.exists() else [str(project_root)],
     binaries=[],
-    datas=[(str(assets_src), 'assets')],  # bundle the real assets folder
-    hiddenimports=[
-        *hidden_tracker,
-        'PIL._tkinter_finder',
-    ],
+    datas=[],                                          # <-- no assets
+    hiddenimports=[*hidden_tracker, "PIL._tkinter_finder"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -51,12 +39,12 @@ a = Analysis(
 )
 
 # -----------------------------------------------------------------------------
-# Build byte‑code archive
+# 4) Build the .pyz
 # -----------------------------------------------------------------------------
 pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 
 # -----------------------------------------------------------------------------
-# Build the executable
+# 5) Build the executable
 # -----------------------------------------------------------------------------
 exe = EXE(
     pyz,
@@ -65,24 +53,15 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='tracker',
+    name="tracker",            # name of exe/folder
     debug=False,
-    bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=False,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    icon=str(assets_src / 'icon.ico')  # assuming icon.ico lives in assets/
+    console=False,             # set True if you need a console
 )
 
 # -----------------------------------------------------------------------------
-# Collect into one‑folder bundle
+# 6) Collect into one‑folder bundle
 # -----------------------------------------------------------------------------
 coll = COLLECT(
     exe,
@@ -91,6 +70,5 @@ coll = COLLECT(
     a.datas,
     strip=False,
     upx=True,
-    upx_exclude=[],
-    name='tracker'
+    name="tracker",
 )
