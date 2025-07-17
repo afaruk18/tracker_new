@@ -13,7 +13,7 @@ from tracker.tables.activity_table import ActivityEventType
 class DevPulseApp:
     """Main application class for the activity tracker."""
 
-    SUPPORTED_SYSTEMS: set[str] = {"windows", "darwin", "linux"}
+    SUPPORTED_SYSTEMS: set[str] = {"win32", "darwin", "linux"}
 
     def __init__(self) -> None:
         """Initialize the activity tracker with all tasks and signal handling."""

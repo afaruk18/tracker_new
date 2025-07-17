@@ -23,6 +23,7 @@ dependencies = [
     "pyinstaller>=6.14.2",
     "loguru>=0.7.3",
     "pyside6>=6.8.0",
+    "pywin32>=311",
 ]
 
 [tool.hatch.build.targets.wheel]

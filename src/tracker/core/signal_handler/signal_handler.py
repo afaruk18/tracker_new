@@ -21,8 +21,10 @@ class SignalHandler:
     """Install exit-related signal handlers and coordinate graceful shutdown."""
 
     #: Exit signals we *always* hook
-    _BASE_SIGNALS = [signal.SIGINT, signal.SIGTERM, signal.SIGHUP]
-
+    _BASE_SIGNALS = [signal.SIGINT, signal.SIGTERM]
+    if hasattr(signal, "SIGHUP"):
+        _BASE_SIGNALS.append(signal.SIGHUP) 
+    
     #: Windows-specific mapping (Ctrl-Break, log-off, shutdown)
     if os.name == "nt" and hasattr(signal, "SIGBREAK"):
         _BASE_SIGNALS.append(signal.SIGBREAK)  # type: ignore[arg-type]
