@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from sqlmodel import SQLModel, select
+from sqlmodel import SQLModel
 
 from tracker.config.tracker_settings import tracker_settings
-from tracker.db.connect import get_session
+from tracker.event_queue import enqueue
 from tracker.tables.activity_table import ActivityEvent, ActivityEventType
 from tracker.tables.heartbeat_table import HeartbeatEvent, HeartbeatType
 from tracker.tables.window_event_table import WindowEvent
@@ -30,58 +30,32 @@ class EventStore:
 
     @staticmethod
     def _insert(row: SQLModel) -> None:
-        with get_session() as session:
-            session.add(row)
-            session.commit()
+        enqueue(row)
 
-    @staticmethod
-    def _handle_working_session(label: ActivityEventType) -> None:
-        ts = datetime.now()
-        with get_session() as session:
-            open_session = session.exec(
-                select(WorkingSession)
-                .where(
-                    WorkingSession.username == tracker_settings.user,
-                    WorkingSession.end_time.is_(None),
+    _current_session: WorkingSession | None = None
+    _incomplete_window_events: dict[int, WindowEvent] = {}
+    _window_event_id: int = 1
+
+    @classmethod
+    def _handle_working_session(cls, label: ActivityEventType, ts: datetime) -> None:
+        if label == ActivityEventType.ACTIVE:
+            if cls._current_session is None:
+                cls._current_session = WorkingSession(
+                    username=tracker_settings.user,
+                    start_time=ts,
                 )
-                .order_by(WorkingSession.start_time.desc())
-            ).first()
-
-            if label == ActivityEventType.ACTIVE:
-                if open_session is None:
-                    session.add(
-                        WorkingSession(
-                            username=tracker_settings.user,
-                            start_time=ts,
-                        )
-                    )
-            elif label in {
-                ActivityEventType.INACTIVE,
-                ActivityEventType.SCREEN_LOCKED,
-                ActivityEventType.NORMAL_SHUTDOWN,
-                ActivityEventType.SYSTEM_SHUTDOWN,
-                ActivityEventType.USER_INTERRUPT,
-            }:
-                if open_session is not None:
-                    open_session.end_time = ts
-                    open_session.end_reason = label
-                    session.add(open_session)
-            elif label == ActivityEventType.STARTED:
-                if open_session is not None:
-                    last_hb = session.exec(
-                        select(HeartbeatEvent)
-                        .where(
-                            HeartbeatEvent.username == tracker_settings.user,
-                            HeartbeatEvent.timestamp > open_session.start_time,
-                            HeartbeatEvent.timestamp < ts,
-                        )
-                        .order_by(HeartbeatEvent.timestamp.desc())
-                    ).first()
-                    end_ts = last_hb.timestamp if last_hb else ts
-                    open_session.end_time = end_ts
-                    open_session.end_reason = label
-                    session.add(open_session)
-            session.commit()
+        elif label in {
+            ActivityEventType.INACTIVE,
+            ActivityEventType.SCREEN_LOCKED,
+            ActivityEventType.NORMAL_SHUTDOWN,
+            ActivityEventType.SYSTEM_SHUTDOWN,
+            ActivityEventType.USER_INTERRUPT,
+        }:
+            if cls._current_session is not None:
+                cls._current_session.end_time = ts
+                cls._current_session.end_reason = label
+                enqueue(cls._current_session)
+                cls._current_session = None
 
     @staticmethod
     def log_event(label: ActivityEventType) -> None:
@@ -102,7 +76,7 @@ class EventStore:
             )
         )
 
-        EventStore._handle_working_session(label)
+        EventStore._handle_working_session(label, ts)
 
     @staticmethod
     def heartbeat(timestamp: datetime | None = None, type: HeartbeatType = HeartbeatType.REGULAR) -> None:
@@ -167,86 +141,38 @@ class EventStore:
 
     @staticmethod
     def create_incomplete_window_event(window_title: str, start_time: datetime) -> int:
-        """Create an incomplete window event with null end_time and duration.
-
-        Returns the ID of the created event for later updates.
-
-        Args:
-            window_title: Title of the focused window
-            start_time: When the window became focused
-
-        Returns:
-            The ID of the created WindowEvent record
-        """
-        with get_session() as session:
-            window_event = WindowEvent(
-                username=tracker_settings.user,
-                window_title=window_title,
-                duration=None,
-                start_time=start_time,
-                end_time=None,  # Incomplete - to be filled later
-            )
-            session.add(window_event)
-            session.commit()
-            session.refresh(window_event)  # Get the generated ID
-            return window_event.id
+        """Create an incomplete window event and store it in memory."""
+        event_id = EventStore._window_event_id
+        EventStore._window_event_id += 1
+        window_event = WindowEvent(
+            id=event_id,
+            username=tracker_settings.user,
+            window_title=window_title,
+            duration=None,
+            start_time=start_time,
+            end_time=None,
+        )
+        EventStore._incomplete_window_events[event_id] = window_event
+        return event_id
 
     @staticmethod
     def complete_window_event(event_id: int, end_time: datetime) -> None:
-        """Complete a window event by setting end_time and calculating duration.
-
-        Args:
-            event_id: ID of the WindowEvent to complete
-            end_time: When the window lost focus
-        """
-        with get_session() as session:
-            window_event = session.get(WindowEvent, event_id)
-            if window_event and window_event.end_time is None:
-                window_event.end_time = end_time
-                if window_event.start_time:
-                    window_event.duration = (window_event.end_time - window_event.start_time).total_seconds()
-                session.add(window_event)
-                session.commit()
+        """Complete a stored window event and enqueue it."""
+        window_event = EventStore._incomplete_window_events.pop(event_id, None)
+        if window_event and window_event.end_time is None:
+            window_event.end_time = end_time
+            if window_event.start_time:
+                window_event.duration = (
+                    window_event.end_time - window_event.start_time
+                ).total_seconds()
+            enqueue(window_event)
 
     @staticmethod
     def find_and_complete_incomplete_window_events() -> None:
-        """Find incomplete window events and complete them using heartbeat data.
-
-        This method handles crash recovery by finding window events with null end_time
-        and using the last heartbeat after the start_time to determine the end_time.
-        """
-        with get_session() as session:
-            # Find all incomplete window events for the current user
-            incomplete_events = session.exec(
-                select(WindowEvent)
-                .where(
-                    WindowEvent.username == tracker_settings.user,
-                    WindowEvent.end_time.is_(None),  # Should return None if everything works fine.
-                )
-                .order_by(WindowEvent.start_time.asc())
-            ).all()
-
-            for event in incomplete_events:
-                if event.start_time:
-                    # Find the last heartbeat after this window event started
-                    last_heartbeat = session.exec(
-                        select(HeartbeatEvent)
-                        .where(
-                            HeartbeatEvent.username == tracker_settings.user,
-                            HeartbeatEvent.timestamp > event.start_time,
-                        )
-                        .order_by(HeartbeatEvent.timestamp.desc())
-                    ).first()
-
-                    if last_heartbeat:
-                        # Use the last heartbeat timestamp as the end time
-                        event.end_time = last_heartbeat.timestamp
-                        event.duration = (last_heartbeat.timestamp - event.start_time).total_seconds()
-                        session.add(event)
-                    else:
-                        # No heartbeat found after start_time, use start_time as end_time (zero duration)
-                        event.end_time = event.start_time
-                        event.duration = 0.0
-                        session.add(event)
-
-            session.commit()
+        """Complete any window events that never received an end time."""
+        for event_id, event in list(EventStore._incomplete_window_events.items()):
+            if event.start_time and event.end_time is None:
+                event.end_time = event.start_time
+                event.duration = 0.0
+                enqueue(event)
+                EventStore._incomplete_window_events.pop(event_id, None)

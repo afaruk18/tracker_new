@@ -5,7 +5,6 @@ from loguru import logger
 from tracker.config.logger_config import setup_logging
 from tracker.config.tracker_settings import tracker_settings
 from tracker.core import ActivityStateTask, HeartbeatTask, ScreenshotTask, SignalHandler, WindowTrackerTask
-from tracker.db.connect import test_database_connection
 from tracker.db.event_store import EventStore
 from tracker.tables.activity_table import ActivityEventType
 
@@ -77,10 +76,5 @@ class DevPulseApp:
             logger.error(f"Unsupported system: {tracker_settings.system}")
             return False
 
-        # Test database connection before starting the application
-        logger.info("Testing database connection...")
-        if not test_database_connection():
-            logger.error("Failed to connect to database. Exiting application.")
-            return False
-
+        # No database is configured when running the lightweight tracker
         return True
