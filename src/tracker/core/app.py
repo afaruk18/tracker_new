@@ -4,7 +4,7 @@ from datetime import datetime
 from loguru import logger
 
 from tracker.config.tracker_settings import tracker_settings
-from tracker.core import ActivityStateTask, HeartbeatTask, ScreenshotCapturer, ScreenshotTask, WindowTrackerTask
+from tracker.core import ActivityStateTask, HeartbeatTask, ScreenshotCapturer, WindowTrackerTask
 from tracker.db.event_store import EventStore
 from tracker.tables.activity_table import ActivityEventType
 
@@ -20,7 +20,6 @@ class ActivityTracker:
         self.capturer = ScreenshotCapturer(self.screenshot_dir)
         self.tasks: list = [
             HeartbeatTask(interval=tracker_settings.HEARTBEAT_EVERY),
-            ScreenshotTask(interval=tracker_settings.SCREENSHOT_INTERVAL, capturer=self.capturer),
             WindowTrackerTask(interval=tracker_settings.WINDOW_EVENT_INTERVAL),
             ActivityStateTask(),
         ]

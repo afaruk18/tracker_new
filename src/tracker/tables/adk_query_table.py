@@ -3,7 +3,6 @@ from sqlmodel import Field, SQLModel, UniqueConstraint
 
 class AdkQuery(SQLModel, table=True):
     """Database model representing a reusable ADK query saved by the user.
-
     The *query* column stores the full ADK query text while *tags* holds
     a comma-separated set of keywords (e.g. "activity,calendar,performance")
     that makes searching and categorising easier.

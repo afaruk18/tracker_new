@@ -1,9 +1,10 @@
 from tracker.db.query_store import QueryStore
 
 QueryStore.save_query(
-    name="Total Useful Activity time",
+    name="Last shutdown(logout) time",
     query=(
-        "What is useful activity time?"
+        "What is last shutdown(logout) time?"
     ),
-    tags=["act"],
+    tags=["lsd"],
 )
+

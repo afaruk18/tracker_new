@@ -21,5 +21,5 @@ class Person_Usernames(SQLModel, table=True):
     # External system usernames (optional because not everyone has all accounts)
     github_user: str | None = Field(default=None, index=True, description="GitHub username")
     jira_user: str | None = Field(default=None, index=True, description="Jira username")
-    gcal_user: str | None = Field(default=None, index=True, description="Google Calendar username / email")
+    gcal_user: str | None = Field(default=None, index=True, description="Google Calendar email")
     computer_user: str | None = Field(default=None, index=True, description="Local computer (OS) account username")
